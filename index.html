@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Voided Admin Panel</title>
+
+<style>
+body{
+margin:0;
+font-family:monospace;
+background:#0b0b10;
+color:white;
+}
+
+header{
+padding:15px;
+border-bottom:1px solid #222;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.container{
+display:grid;
+grid-template-columns:1fr 1fr;
+height:calc(100vh - 60px);
+}
+
+.panel{
+padding:20px;
+}
+
+.card{
+background:#111;
+padding:15px;
+border-radius:10px;
+margin-bottom:10px;
+}
+
+input, textarea{
+width:100%;
+padding:10px;
+margin-top:8px;
+background:#050507;
+border:1px solid #333;
+color:white;
+border-radius:6px;
+}
+
+button{
+background:#7c3aed;
+border:none;
+padding:10px 14px;
+color:white;
+border-radius:6px;
+cursor:pointer;
+margin-top:10px;
+width:100%;
+}
+
+.hidden{display:none;}
+
+.small{
+color:#888;
+font-size:12px;
+}
+
+img{
+max-width:100%;
+margin-top:10px;
+border-radius:8px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h2>Voided Admin Panel</h2>
+</header>
+
+<div class="container">
+
+<!-- LOGIN -->
+<div class="panel" id="loginPanel">
+<div class="card">
+<h3>Admin Login</h3>
+<input id="pass" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+</div>
+</div>
+
+<!-- POST PANEL -->
+<div class="panel hidden" id="postPanel">
+
+<div class="card">
+<h3>Create Post</h3>
+
+<select id="category">
+<option>Studio Announcements</option>
+<option>Game Updates</option>
+</select>
+
+<input id="title" placeholder="Title">
+<textarea id="content" placeholder="Content"></textarea>
+
+<input type="file" id="file">
+
+<button onclick="post()">Post to Hub</button>
+</div>
+
+</div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+getFirestore,
+collection,
+addDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+apiKey: "AIzaSyCnaqJpEFaLAvCCIwer7zeL7Qp2DVpehAs",
+authDomain: "voidedstudioshub.firebaseapp.com",
+projectId: "voidedstudioshub",
+storageBucket: "voidedstudioshub.appspot.com",
+messagingSenderId: "375447682336",
+appId: "1:375447682336:web:d87a64449cbd658dc1eb45",
+measurementId: "G-P6Y43E7VTF"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const PASSWORD = "VoidedStudios.Agent";
+
+let fileData = null;
+
+window.login = function(){
+const pass = document.getElementById("pass").value;
+
+if(pass === PASSWORD){
+document.getElementById("loginPanel").classList.add("hidden");
+document.getElementById("postPanel").classList.remove("hidden");
+}else{
+alert("Incorrect password");
+}
+};
+
+document.getElementById("file").addEventListener("change", function(e){
+const file = e.target.files[0];
+if(!file) return;
+
+const reader = new FileReader();
+reader.onload = () => {
+fileData = reader.result;
+};
+reader.readAsDataURL(file);
+});
+
+window.post = async function(){
+
+const category = document.getElementById("category").value;
+const title = document.getElementById("title").value;
+const content = document.getElementById("content").value;
+
+if(!title || !content) return;
+
+await addDoc(collection(db, category), {
+title,
+content,
+file: fileData || "",
+time: new Date().toLocaleString()
+});
+
+fileData = null;
+
+document.getElementById("title").value = "";
+document.getElementById("content").value = "";
+
+alert("Posted to Hub");
+};
+</script>
+
+</body>
+</html>
